@@ -61,8 +61,8 @@ mcmc_dens_overlay(model_start)
 mcmc_acf(model_start)
 
 # Výpis vlivu žánrů (to nás zajímá)
-ranef(model_complete)$genre
-VarCorr(model_complete)
+ranef(model_start)$genre
+VarCorr(model_start)
 
 
 model_2 <- stan_glmer(
@@ -100,14 +100,14 @@ mcmc_acf(model_3)
 
 cv_1 <- prediction_summary_cv(
   model = model_start,
-  data  = final_dataset,
+  data  = final_dataset_20,
   k     = 10,
   group = "genres"
 )
 
 cv_2 <- prediction_summary_cv(
   model = model_2,
-  data  = final_dataset,
+  data  = final_dataset_20,
   k     = 10,
   group = "genres"
 )

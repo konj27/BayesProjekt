@@ -8,6 +8,7 @@ library(rstanarm)
 library(broom.mixed)
 library(tidybayes)
 library(loo)
+library(modelr)
 
 raw_data <- read.csv("DATASET_BAYES_IMDB.csv")
 
@@ -81,6 +82,35 @@ mcmc_trace(model_2)
 mcmc_dens_overlay(model_2)
 mcmc_acf(model_2)
 model_2ranef <- ranef(model_2)$genre
+mcmc_intervals(model_2)
+
+tidy(model_2, effects = c("fixed", "aux"))
+posterior_interval(model_2)
+
+final_dataset_20 %>%
+  group_by(genres) %>%
+  #data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50)) %>%
+  data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50),numVotes = mean(numVotes)) %>%
+  
+  # 2. Přidáme predikce z modelu
+  add_fitted_draws(model_2, n = 50) %>%
+  
+  ggplot(aes(x = runtimeMinutes, y = .value, fill = genres, color = genres)) +
+  
+  # 3. Vykreslíme stuhy (intervaly) a čáry
+  stat_lineribbon(alpha = 0.4, .width = 0.95) +
+  
+
+  facet_wrap(~ genres, scales = "free") + 
+
+  labs(title = "Predikce hodnocení pro jednotlivé žánry",
+     y = "Očekávané hodnocení",
+     x = "Délka filmu (min)") +
+  
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
 
 model_3 <- stan_glm(
   averageRating ~ runtimeMinutes + numVotes + genres, 

@@ -55,7 +55,6 @@ mcmc_trace(model_start)
 mcmc_dens_overlay(model_start)
 mcmc_acf(model_start)
 
-# Výpis vlivu žánrů (to nás zajímá)
 model_startranef <- ranef(model_start)$genre
 test <- ranef(model_start)
 VarCorr(model_start)
@@ -84,7 +83,7 @@ posterior_interval(model_2)
 
 final_dataset_20 %>%
   group_by(genres) %>%
-  #data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50)) %>%
+  
   data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50),numVotes = mean(numVotes)) %>%
 
   add_fitted_draws(model_2, n = 50) %>%

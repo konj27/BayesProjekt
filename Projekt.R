@@ -13,24 +13,19 @@ library(modelr)
 raw_data <- read.csv("DATASET_BAYES_IMDB.csv")
 
 genre_manipulation <- raw_data %>%
-  # 1. Odstraníme duplicity způsobené režiséry (jako předtím)
   group_by(tconst) %>%
   slice(1) %>%
   ungroup() %>%
-  
-  # 2. ZDE JE ZMĚNA: Rozdělíme žánry do více řádků
-  # Film s žánry "Horror,Sci-Fi" bude mít teď dva řádky
   separate_rows(genres, sep = ",") %>%
   
   mutate(genres = as.factor(genres))
 final_dataset <- genre_manipulation
-# Kontrola: Počet řádků by měl být vyšší než počet unikátních filmů
+
 print(nrow(genre_manipulation)) 
 print(n_distinct(genre_manipulation$tconst))
 
 #pridani filtru pro zanry ktere definuji alespon 20 filmu protoze male vyorky delaji problem v cv
 final_dataset_20 <- final_dataset %>%
-  # Seskupit podle sloupce s žánry
   group_by(genres) %>% 
   
   # Necháme jen žánry, co mají alespoň 20 filmů
@@ -91,26 +86,19 @@ final_dataset_20 %>%
   group_by(genres) %>%
   #data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50)) %>%
   data_grid(runtimeMinutes = seq_range(runtimeMinutes, n = 50),numVotes = mean(numVotes)) %>%
-  
-  # 2. Přidáme predikce z modelu
+
   add_fitted_draws(model_2, n = 50) %>%
   
   ggplot(aes(x = runtimeMinutes, y = .value, fill = genres, color = genres)) +
-  
-  # 3. Vykreslíme stuhy (intervaly) a čáry
   stat_lineribbon(alpha = 0.4, .width = 0.95) +
   
 
   facet_wrap(~ genres, scales = "free") + 
-
   labs(title = "Predikce hodnocení pro jednotlivé žánry",
      y = "Očekávané hodnocení",
      x = "Délka filmu (min)") +
-  
   theme_minimal() +
   theme(legend.position = "none")
-
-
 
 model_3 <- stan_glm(
   averageRating ~ runtimeMinutes + numVotes + genres, 
